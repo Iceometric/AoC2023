@@ -78,9 +78,9 @@ int get_value_from_line(char *buffer) {
 }
 
 int get_sum(FILE *file) {
-    int sum, value, word_value, found_first, end_of_file;
-    char *c, buffer[BUFFER_SIZE];
-    found_first = value = sum = 0;
+    int sum, end_of_file;
+    char buffer[BUFFER_SIZE];
+    sum = 0;
     while(1) {
         end_of_file = get_line(file, buffer);
         sum += get_value_from_line(buffer);
