@@ -2,27 +2,82 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+#define BUFFER_SIZE 256
+
 enum Status {
     SUCCESS,
     INPUT_ERROR,
     FILE_ERROR
 };
 
-int get_sum(FILE *file) {
-    int c, sum, value, found_first;
-    found_first = value = sum = 0;
+int get_digit_word(char *word) {
+    char *NUMBERS[] = {
+        "one",
+        "two",
+        "three",
+        "four",
+        "five",
+        "six",
+        "seven",
+        "eight",
+        "nine"
+    };
+    int is_equal = 0;
+    char *digit, *c;
+    for (size_t i = 0; i < 9; ++i) {
+        digit = NUMBERS[i];
+        is_equal = 1;
+        c = word;
+        while (*digit && is_equal) {
+            is_equal = *digit == *c;
+            digit++;
+            c++;
+        }
+        
+        if (is_equal) return (i + 1);
+    }
+    return 0;
+}
+
+int get_line(FILE *file, char *buffer) {
+    char c;
     while (EOF != (c = getc(file))) {
-        if (isdigit(c)) {
-            value = c - '0';
-            if (!found_first) {
-                sum += value * 10;
-                found_first = 1;
+        *buffer++ = c;
+        if (c == '\n') break;
+    }
+    *buffer = '\0';
+    return c == EOF;
+}
+
+int get_sum(FILE *file) {
+    int sum, value, word_value, found_first, end_of_file;
+    char *c, buffer[BUFFER_SIZE];
+    found_first = value = sum = 0;
+    while(1) {
+        end_of_file = get_line(file, buffer);
+        c = buffer;
+        while (*c) {
+            if ((word_value = get_digit_word(c))) {
+                value = word_value;
+                if (!found_first) {
+                    sum += value * 10;
+                    found_first = 1;
+                }
             }
+            if (isdigit(*c)) {
+                value = *c - '0';
+                if (!found_first) {
+                    sum += value * 10;
+                    found_first = 1;
+                }
+            }
+            if (*c == '\n') {
+                sum += value;
+                value = found_first = 0;
+            }
+            c++;
         }
-        if (c == '\n') {
-            sum += value;
-            value = found_first = 0;
-        }
+        if (end_of_file) break;
     }
     return sum;
 }
