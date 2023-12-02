@@ -49,34 +49,41 @@ int get_line(FILE *file, char *buffer) {
     return c == EOF;
 }
 
+int get_value_from_line(char *buffer) {
+    char *c = buffer;
+    int value, word_value, found_first, sum;
+    found_first = sum = 0;
+    while (*c) {
+        if ((word_value = get_digit_word(c))) {
+            value = word_value;
+            if (!found_first) {
+                sum += value * 10;
+                found_first = 1;
+            }
+        }
+        if (isdigit(*c)) {
+            value = *c - '0';
+            if (!found_first) {
+                sum += value * 10;
+                found_first = 1;
+            }
+        }
+        if (*c == '\n') {
+            sum += value;
+            value = found_first = 0;
+        }
+        c++;
+    }
+    return sum;
+}
+
 int get_sum(FILE *file) {
     int sum, value, word_value, found_first, end_of_file;
     char *c, buffer[BUFFER_SIZE];
     found_first = value = sum = 0;
     while(1) {
         end_of_file = get_line(file, buffer);
-        c = buffer;
-        while (*c) {
-            if ((word_value = get_digit_word(c))) {
-                value = word_value;
-                if (!found_first) {
-                    sum += value * 10;
-                    found_first = 1;
-                }
-            }
-            if (isdigit(*c)) {
-                value = *c - '0';
-                if (!found_first) {
-                    sum += value * 10;
-                    found_first = 1;
-                }
-            }
-            if (*c == '\n') {
-                sum += value;
-                value = found_first = 0;
-            }
-            c++;
-        }
+        sum += get_value_from_line(buffer);
         if (end_of_file) break;
     }
     return sum;
