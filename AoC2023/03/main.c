@@ -40,49 +40,44 @@ int valid_char(char c) {
     return c != '.' && !isdigit(c);
 }
 
-int get_digit_sequence_as_int(char *row, int index) {
-    char *v, buffer[10];
-    char *c = &row[index];
-    v = buffer;
-    while (isdigit(*c) && c >= row) c--;
-    c++;
-    while (*c && isdigit(*c)) *v++ = *c++;
-    *v = '\0';
-    return atoi(buffer);
-}
+int validate_value_with_start_end(char buffer[ROW_FUNCTION_COUNT][BUFFER_SIZE], int start, int end) {
+    int is_valid = 0;
 
-int get_sum_for_row(char row[BUFFER_SIZE], int index) {
-    int is_digit_sequance = 0;
-    int sum = 0;
-    for (int i = -1; i < 2; ++i) {
-        if (index + i < 0) continue;
-        if (isdigit(row[index + i])) {
-            if (is_digit_sequance == 0) {
-                sum += get_digit_sequence_as_int(row, index + i);
+    for (int i = start;i <= end; ++i) {
+        for (int j = 0; j < ROW_FUNCTION_COUNT; ++j) {
+            if (buffer[j][i]) {
+                is_valid = valid_char(buffer[j][i]);
+                if (is_valid) goto exit_nested_loop;
             }
-            is_digit_sequance++;
-        } else {
-            is_digit_sequance = 0;
         }
     }
-    return sum;
-}
-
-int get_sum_from_index(char buffer[ROW_FUNCTION_COUNT][BUFFER_SIZE], int index) {
-    return get_sum_for_row(&buffer[TOP][0], index)
-        + get_sum_for_row(&buffer[READ][0], index)
-        + get_sum_for_row(&buffer[BOT][0], index);
+exit_nested_loop:
+    return is_valid;
 }
 
 int get_value_from_line_array(char buffer[ROW_FUNCTION_COUNT][BUFFER_SIZE]) {
-    char *read_row = &buffer[READ][0];
+    char *v, value_buffer[10];
+    char *c = &buffer[READ][0];
     int i = 0;
     int sum = 0;
-    while (*read_row) {
-        if (valid_char(*read_row)) {
-            sum += get_sum_from_index(buffer, i);
+    int is_digit_sequance = 0;
+    int start, end;
+    v = value_buffer;
+    while (*c) {
+        if (isdigit(*c)) {
+            if (is_digit_sequance == 0) {
+                start = i - 1 < 0 ? 0 : i - 1;
+            }
+            is_digit_sequance++;
+            *v++ = *c;
+        } else {
+           *v = '\0';
+           end = i;
+           is_digit_sequance = 0;
+           if (validate_value_with_start_end(buffer, start, end)) sum += atoi(value_buffer);
+           v = value_buffer;
         }
-        read_row++;
+        c++;
         i++;
     }
     return sum;
