@@ -4,9 +4,6 @@
 #include <string.h>
 
 #define BUFFER_SIZE 256
-#define MAX_RED 12
-#define MAX_GREEN 13
-#define MAX_BLUE 14
 
 enum Status {
     SUCCESS,
