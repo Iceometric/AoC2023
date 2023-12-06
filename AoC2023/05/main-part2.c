@@ -99,41 +99,68 @@ unsigned long long get_index_from_map(unsigned long long index, char buffer[BUFF
 
     int i = 0;
     unsigned long long values[INDEX_TYPE_COUNT];
+    unsigned long long start, end, result;
     while (buffer[i][0]) {
         memset(values, '\0', sizeof(unsigned long long) * INDEX_TYPE_COUNT);
         if (get_properties(&buffer[i++][0], values)) continue;
 
-        if (index >= values[DESTINATION_RANGE_START] 
-            && index < values[DESTINATION_RANGE_START] + values[RANGE_LENGTH]) {
+        start = values[DESTINATION_RANGE_START];
+        end = values[DESTINATION_RANGE_START] + values[RANGE_LENGTH];
 
-            return values[SOURCE_RANGE_START] + (index - values[DESTINATION_RANGE_START]);
+        if (index >= start && index < end) {
+            result = values[SOURCE_RANGE_START] + (index - values[DESTINATION_RANGE_START]);
+            return result;
         }
     }
     return index;
 }
 
+int exists_in_seeds(unsigned long long index, unsigned long long seeds[SEED_COUNT]) {
+    unsigned long long start, end;
+    
+    size_t i = 0;
+    while(seeds[i]) {
+        start = seeds[i++];
+        end = seeds[i++] + start;
+
+        if (index >= start && index <= end) {
+            printf("index: %llu", index);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int lowest_from_seeds(unsigned long long seeds[SEED_COUNT]) {
+    unsigned long long lowest = seeds[0];
+    for (size_t i = 0; seeds[i]; i += 2) {
+        lowest = lowest < seeds[i] ? lowest : seeds[i];
+    }
+
+    return lowest;
+}
+
 unsigned long long get_lowest_location(FILE *file) {
     char buffer[MAP_TYPE_COUNT][BUFFER_COUNT][BUFFER_SIZE] = {0};
     unsigned long long seeds[SEED_COUNT] = {0};
-    int i, got_first_value;
-    unsigned long long lowest_location, index;
-    index = got_first_value = i = 0;
+
+    unsigned long long index, i;
 
     get_seeds(file, seeds);
     get_maps(file, buffer);
-    while (seeds[i]) {
-        index = seeds[i];
-        for (int map = SEED_TO_SOIL; map < MAP_TYPE_COUNT; ++map) {
+    i = 0;
+
+
+    while (1) {
+        if (i % 10000 == 0) printf("%lld\n", i);
+        index = i;
+        for (int map = HUMIDITY_TO_LOCATION; map >= 0; --map) {
             index = get_index_from_map(index, buffer[map]);
         }
-        if (!got_first_value) {
-            lowest_location = index;
-            got_first_value = 1;
-        }
-        lowest_location = lowest_location < index ? lowest_location : index;
+        if (exists_in_seeds(index, seeds)) return i;
+
         i++;
     }
-    return lowest_location;
 }
 
 void run(void) {
