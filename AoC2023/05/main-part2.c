@@ -131,15 +131,6 @@ int exists_in_seeds(unsigned long long index, unsigned long long seeds[SEED_COUN
     return 0;
 }
 
-int lowest_from_seeds(unsigned long long seeds[SEED_COUNT]) {
-    unsigned long long lowest = seeds[0];
-    for (size_t i = 0; seeds[i]; i += 2) {
-        lowest = lowest < seeds[i] ? lowest : seeds[i];
-    }
-
-    return lowest;
-}
-
 unsigned long long get_lowest_location(FILE *file) {
     char buffer[MAP_TYPE_COUNT][BUFFER_COUNT][BUFFER_SIZE] = {0};
     unsigned long long seeds[SEED_COUNT] = {0};
