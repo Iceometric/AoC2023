@@ -31,7 +31,8 @@ typedef struct Card {
 } Card;
 
 /** Lower the index the stronger the card */
-const char CARDS[] = { 'A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2' };
+const char CARDS[] = { 'A', 'K', 'Q', 'T', '9', '8', '7', '6', '5', '4', '3', '2', 'J' };
+// const char CARDS[] = { 'A', 'K', 'Q', 'J', 'T', '9', '8', '7', '6', '5', '4', '3', '2' };
 
 int get_lines(FILE *file, char buffer[LINE_COUNT][BUFFER_SIZE]) {
     char c;
@@ -55,14 +56,27 @@ size_t get_card_index(char c) {
     return CARD_TYPE_COUNT;
 }
 
+void move_J_to_most_beneficial(int map[CARD_TYPE_COUNT]) {
+    int j = get_card_index('J');
+    int highest = 0;
+    int highest_index = 0;
+
+    for (size_t i = 0; i < j; ++i) {
+        if (map[i] > highest) {
+            highest = map[i];
+            highest_index = i;
+        }
+    }
+    map[highest_index] += map[j];
+    map[j] = 0;
+}
+
 void set_hand_type(Card *card) {
     int map[CARD_TYPE_COUNT] = {0};
-    for (size_t i = 0; i < HAND_SIZE; ++i) 
+    for (size_t i = 0; i < HAND_SIZE; ++i)
         map[get_card_index(card->hand[i])]++;
 
-    // printf("%s\n", card->hand);
-    // for (size_t i = 0; i < CARD_TYPE_COUNT; ++i)
-    //     printf("map %zu: %d\n", i, map[i]);
+    move_J_to_most_beneficial(map);
 
     int count[5] = {0};
     for (size_t i = 0; i < CARD_TYPE_COUNT; ++i)
@@ -74,9 +88,6 @@ void set_hand_type(Card *card) {
             case 4: count[3]++; break;
             case 5: count[4]++; break;
         }
-
-    // for (size_t i = 0; i < HAND_SIZE; ++i)
-    //     printf("%zu's: %d\n", i, count[i]);
 
     if (count[4] == 1) {
         card->type = FIVE_OF_A_KIND;
@@ -142,29 +153,14 @@ int get_hands_sum(FILE *file) {
     char buffer[LINE_COUNT][BUFFER_SIZE];
     int count = get_lines(file, buffer);
 
-    for (size_t i = 0; i < count; ++i)
-        printf("%s", &buffer[i][0]);
-
     Card cards[count];
 
-    for (size_t i = 0; i < count; ++i) printf("%s", &buffer[i][0]);
-
-    // populate struct
     for (size_t i = 0; i < count; ++i)
         get_hand_data(&buffer[i][0], &cards[i]);
 
-    // for (size_t i = 0; i < count; ++i)
-    //     print_card_data(&cards[i]);
-
-    // sort array
     qsort(&cards, count, sizeof(Card), lowest_value_first);
 
-    // printf("sorted\n");
-    // for (size_t i = 0; i < count; ++i)
-    //     print_card_data(&cards[i]);
-    
     int sum = 0;
-    // multiply score
     for (size_t i = 0; i < count; ++i)
         sum += cards[i].bid * (i + 1);
 
