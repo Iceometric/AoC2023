@@ -1,6 +1,4 @@
 #include <stdio.h>
-#include <ctype.h>
-#include <string.h>
 #include <stdlib.h>
 
 // #define RACE_COUNT 4
@@ -12,10 +10,7 @@ enum Status {
     FILE_ERROR
 };
 
-int get_race_sum(FILE *file) {
-
-    // Time:      7  15   30
-    // Distance:  9  40  200
+int get_race_sum(void) {
 
     // int time[RACE_COUNT] = { 44, 80, 65, 72 };
     // int distance[RACE_COUNT] = { 208, 1581, 1050, 1102 };
@@ -36,7 +31,6 @@ int get_race_sum(FILE *file) {
             if(result > d) {
                 ++win_count;
                 if (win_count % 100000 == 0) printf("%lld\n", win_count);
-                // printf("result: %lld, t: %lld, d: %lld, press: %lld\n", result, t, d, press);
             }
         }
 
@@ -46,10 +40,7 @@ int get_race_sum(FILE *file) {
 }
 
 void run(void) {
-    FILE *input = fopen("input.txt", "r");
-    if (!input) exit(-FILE_ERROR);
-    printf("The race sum: %d\n", get_race_sum(input));
-    fclose(input);
+    printf("The race sum: %d\n", get_race_sum());
 }
 
 int main(void) {

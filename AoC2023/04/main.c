@@ -21,7 +21,7 @@ int get_line(FILE *file, char *buffer) {
     return c == EOF;
 }
 
-int get_value_from_line(char buffer[BUFFER_SIZE]) {
+int get_value_from_line(char buffer[BUFFER_SIZE], int *additional_cards) {
     char *v, value_buffer[10];
     char *c = &buffer[0];
     int score = 0;
@@ -41,29 +41,33 @@ int get_value_from_line(char buffer[BUFFER_SIZE]) {
         *v = '\0';
         value = atoi(value_buffer);
         
-        if (value) {
-            *current++ = value;
-        }
+        if (value) *current++ = value;
 
         c++;
     }
     
-    int *p = player_numbers;
-    int *w = winning_numbers;
-    while (*p) {
-        w = winning_numbers;
-        printf("NOW p:%d\n", *p);
-        while (*w) {
-            if (*w == *p) {
-                printf("w:%d == p:%d\n", *w, *p);
-                score *= 2;
-                if (score == 0) score = 1;
+    do {
+        int *a = additional_cards + 1;
+        int *p = player_numbers;
+        int *w = winning_numbers;
+        while (*p) {
+            w = winning_numbers;
+            while (*w) {
+                if (*w == *p) {
+                    *a++ += 1;
+                }
+                w++;
             }
-            w++;
+            p++;
         }
-        p++;
-    }
+        score++;
+    } while(additional_cards[0]--);
 
+    int *old = additional_cards;
+    int *new = additional_cards + 1;
+    while (*new) *old++ = *new++;
+    *new = 0;
+    
     return score;
 }
 
@@ -71,12 +75,15 @@ int get_score(FILE *file) {
     int sum = 0;
     int end_of_file = 0;
     char buffer[BUFFER_SIZE] = {0};
+    int additional_cards[50] =  {0};
+    int i = 0;
     while(1) {
+        printf("%d\n",i++);
         end_of_file = get_line(file, buffer);
         if (end_of_file) break;
-        sum += get_value_from_line(buffer);
+        sum += get_value_from_line(buffer, additional_cards);
     }
-    return sum;
+    return sum - 1;
 }
 
 void run(void) {
