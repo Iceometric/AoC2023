@@ -76,7 +76,6 @@ void populateDestinationsFromBuffer(Destination *d, char buffer[LINE_COUNT][BUFF
 }
 
 void set_directions(int directions[BUFFER_SIZE], int count, char *buffer) {
-    // size_t i = 0;
     int is_left = 0;
     for (size_t i = 0; i < count; ++i) {
         is_left = buffer[i] == 'L';
